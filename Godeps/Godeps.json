@@ -1,0 +1,10 @@
+{
+	"ImportPath": "jo",
+	"GoVersion": "go1.4",
+	"Deps": [
+		{
+			"ImportPath": "github.com/gorilla/websocket",
+			"Rev": "ab5b3a61f5b6aa323d66ece457334396c4ccdd03"
+		}
+	]
+}
