@@ -2,13 +2,13 @@ package main
 
 type hub struct {
     connections map[*connection]bool
-    broadcast chan []byte
+    broadcast chan interface{}
     register chan *connection
     unregister chan *connection
 }
 
 var h = hub{
-    broadcast:   make(chan []byte),
+    broadcast:   make(chan interface{}),
     register:    make(chan *connection),
     unregister:  make(chan *connection),
     connections: make(map[*connection]bool),
