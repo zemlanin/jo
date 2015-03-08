@@ -47,6 +47,7 @@ func (c *connection) readPump() {
 			message["playerId"] = "12"
 		}
 		if message["type"] == "GET_PLAYER" {
+			message["type"] = "PLAYER"
 			message["player"] = map[string]interface{}{
 				"gameId": 2222,
 				"name":   "whatever",
@@ -54,6 +55,7 @@ func (c *connection) readPump() {
 			}
 		}
 		if message["type"] == "GET_PLAYERS" {
+			message["type"] = "PLAYERS"
 			message["players"] = []map[string]interface{}{
 				{
 					"gameId": 2222,
@@ -68,6 +70,7 @@ func (c *connection) readPump() {
 			}
 		}
 		if message["type"] == "GET_GAME_STATE" {
+			message["type"] = "GAME_STATE"
 			game_field := map[string]interface{}{
 				"x": 0,
 				"y": 2,
@@ -76,8 +79,10 @@ func (c *connection) readPump() {
 				"gameField": game_field,
 				"gameId":    2222,
 			}
+			h.broadcast <- message
+		} else {
+			c.send <- message
 		}
-		c.send <- message
 	}
 }
 
@@ -99,7 +104,7 @@ func (c *connection) writePump() {
 	}()
 	for {
 		select {
-		case message, ok := <-c.send:
+		case message, ok := <- c.send:
 			if !ok {
 				c.write(websocket.CloseMessage, []byte{})
 				return
@@ -107,7 +112,7 @@ func (c *connection) writePump() {
 			if err := c.writeJSON(websocket.TextMessage, message); err != nil {
 				return
 			}
-		case <-ticker.C:
+		case <- ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
 				return
 			}
