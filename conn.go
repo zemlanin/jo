@@ -43,10 +43,7 @@ func (c *connection) readPump() {
 			break
 		}
 		log.Println(message)
-		if message["type"] == "NEW_PLAYER" {
-			message["playerId"] = "12"
-		}
-		if message["type"] == "GET_PLAYER" {
+		if message["type"] == "CONNECT_PLAYER" {
 			message["type"] = "PLAYER"
 			message["player"] = map[string]interface{}{
 				"playerId": "12",
