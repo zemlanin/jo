@@ -36,50 +36,26 @@ func (c *connection) readPump() {
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
 	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		var message map[string]interface{}
+		var message lazyJson
 		err := c.ws.ReadJSON(&message)
 		if err != nil {
 			log.Println(err)
 			break
 		}
-		log.Println(message)
-		if message["type"] == "CONNECT_PLAYER" {
-			message["type"] = "PLAYER"
-			message["player"] = map[string]interface{}{
-				"playerId": "12",
-				"gameId":   2222,
-				"name":     "whatever",
-				"online":   true,
-			}
+
+		private, public, err := routeMessage(message)
+
+		if err != nil {
+			log.Println(err)
+			break
 		}
-		if message["type"] == "GET_PLAYERS" {
-			message["type"] = "PLAYERS"
-			message["players"] = []map[string]interface{}{
-				{
-					"gameId": 2222,
-					"name":   "whatever",
-					"online": true,
-				},
-				{
-					"gameId": 2222,
-					"name":   "another",
-					"online": false,
-				},
-			}
+
+		if private != nil {
+			c.send <- private
 		}
-		if message["type"] == "GET_GAME_STATE" {
-			message["type"] = "GAME_STATE"
-			game_field := map[string]interface{}{
-				"x": 0,
-				"y": 2,
-			}
-			message["gameState"] = map[string]interface{}{
-				"gameField": game_field,
-				"gameId":    2222,
-			}
-			h.broadcast <- message
-		} else {
-			c.send <- message
+
+		if public != nil {
+			h.broadcast <- public
 		}
 	}
 }
