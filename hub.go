@@ -2,13 +2,13 @@ package main
 
 type hub struct {
 	connections map[*connection]bool
-	broadcast   chan interface{}
+	broadcast   chan wsMessage
 	register    chan *connection
 	unregister  chan *connection
 }
 
 var h = hub{
-	broadcast:   make(chan interface{}),
+	broadcast:   make(chan wsMessage),
 	register:    make(chan *connection),
 	unregister:  make(chan *connection),
 	connections: make(map[*connection]bool),

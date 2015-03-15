@@ -24,7 +24,7 @@ var upgrader = websocket.Upgrader{
 
 type connection struct {
 	ws   *websocket.Conn
-	send chan interface{}
+	send chan wsMessage
 }
 
 func (c *connection) readPump() {
@@ -36,7 +36,7 @@ func (c *connection) readPump() {
 	c.ws.SetReadDeadline(time.Now().Add(pongWait))
 	c.ws.SetPongHandler(func(string) error { c.ws.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
-		var message lazyJson
+		var message wsMessage
 		err := c.ws.ReadJSON(&message)
 		if err != nil {
 			log.Println(err)
@@ -50,11 +50,11 @@ func (c *connection) readPump() {
 			break
 		}
 
-		if private != nil {
+		if private.Type != "" {
 			c.send <- private
 		}
 
-		if public != nil {
+		if public.Type != "" {
 			h.broadcast <- public
 		}
 	}
@@ -104,7 +104,7 @@ func serveWs(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		return
 	}
-	c := &connection{send: make(chan interface{}), ws: ws}
+	c := &connection{send: make(chan wsMessage), ws: ws}
 	h.register <- c
 	go c.writePump()
 	c.readPump()

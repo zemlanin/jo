@@ -5,13 +5,17 @@ import (
 )
 
 type lazyJson map[string]interface{}
+type wsMessage struct{
+	Type string `json:"type"`
+	Payload interface{} `json:"payload"`
+}
 
-func routeMessage(message lazyJson) (lazyJson, lazyJson, error) {
-	var private lazyJson = nil
-	var public lazyJson = nil
+func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
+	var private wsMessage
+	var public wsMessage
 
 	log.Println(message)
-	switch message["type"] {
+	switch message.Type {
 	case "CONNECT_PLAYER":
 		player := lazyJson{
 			"playerId": "12",
@@ -19,15 +23,12 @@ func routeMessage(message lazyJson) (lazyJson, lazyJson, error) {
 			"name":     "whatever",
 			"online":   true,
 		}
-		private = lazyJson{
-			"type": "PLAYER",
-			"payload": player,
+		private = wsMessage{
+			Type: "PLAYER",
+			Payload: player,
 		}
 
 	case "GET_PLAYERS":
-		private = lazyJson{
-			"type": "PLAYERS",
-		}
 		players := []lazyJson{
 			{
 				"gameId": 2222,
@@ -41,9 +42,9 @@ func routeMessage(message lazyJson) (lazyJson, lazyJson, error) {
 			},
 		}
 
-		private = lazyJson{
-			"type": "PLAYERS",
-			"payload": players,
+		private = wsMessage{
+			Type: "PLAYERS",
+			Payload: players,
 		}
 
 	case "GET_GAME_STATE":
@@ -55,9 +56,9 @@ func routeMessage(message lazyJson) (lazyJson, lazyJson, error) {
 			"gameField": game_field,
 			"gameId":    2222,
 		}
-		public = lazyJson{
-			"type": "GAME_STATE",
-			"payload": game_state,
+		public = wsMessage{
+			Type: "GAME_STATE",
+			Payload: game_state,
 		}
 	}
 
