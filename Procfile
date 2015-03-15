@@ -1,1 +1,1 @@
-web: jo --addr :80
+web: jo
