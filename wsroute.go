@@ -13,22 +13,22 @@ func routeMessage(message lazyJson) (lazyJson, lazyJson, error) {
 	log.Println(message)
 	switch message["type"] {
 	case "CONNECT_PLAYER":
-		private = lazyJson{
-			"type": "PLAYER",
-		}
-		private["player"] = lazyJson{
+		player := lazyJson{
 			"playerId": "12",
 			"gameId":   2222,
 			"name":     "whatever",
 			"online":   true,
+		}
+		private = lazyJson{
+			"type": "PLAYER",
+			"payload": player,
 		}
 
 	case "GET_PLAYERS":
 		private = lazyJson{
 			"type": "PLAYERS",
 		}
-		private["player"] = nil
-		private["players"] = []lazyJson{
+		players := []lazyJson{
 			{
 				"gameId": 2222,
 				"name":   "whatever",
@@ -41,19 +41,24 @@ func routeMessage(message lazyJson) (lazyJson, lazyJson, error) {
 			},
 		}
 
-	case "GET_GAME_STATE":
-		public = lazyJson{
-			"type": "GAME_STATE",
+		private = lazyJson{
+			"type": "PLAYERS",
+			"payload": players,
 		}
+
+	case "GET_GAME_STATE":
 		game_field := lazyJson{
 			"x": 0,
 			"y": 2,
 		}
-		public["gameState"] = lazyJson{
+		game_state := lazyJson{
 			"gameField": game_field,
 			"gameId":    2222,
 		}
-
+		public = lazyJson{
+			"type": "GAME_STATE",
+			"payload": game_state,
+		}
 	}
 
 	return private, public, nil
