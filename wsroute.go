@@ -31,15 +31,33 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 	log.Println(message)
 	switch message.Type {
 	case "CONNECT_PLAYER":
-		player := lazyJson{
-			"playerId": "12",
-			"gameId":   game_id,
-			"name":     "whatever",
-			"online":   true,
+		var player players.Player
+		var c_message players.ConnectionMessage
+
+		if err := mapstructure.Decode(message.Payload, &c_message); err != nil {
+			panic(err)
 		}
+
+		if c_message.Playerid == "" {
+			player = players.GeneratePlayer(c_message.Gameid)
+		} else if p, err := players.GetPlayer(c_message.Gameid, c_message.Playerid); err == nil {
+			player = p
+		} else {
+			player = players.GeneratePlayer(c_message.Gameid)
+		}
+
 		private = wsMessage{
 			Type:    "PLAYER",
 			Payload: player,
+		}
+
+		players, err := players.GetPlayers(c_message.Gameid)
+		if err != nil {
+			panic(err)
+		}
+		public = wsMessage{
+			Type:    "PLAYERS",
+			Payload: players,
 		}
 
 	case "GET_PLAYERS":
@@ -60,13 +78,13 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 
 	case "NEW_PLAYERS_INPUT":
 		var input game.PlayerInput
-		if err := mapstructure.Decode(incoming, &input); err != nil {
+		if err := mapstructure.Decode(message.Payload, &input); err != nil {
 			panic(err)
 		}
 		game.InterpretInput(input)
 		public = wsMessage{
 			Type:    "GAME_STATE",
-			Payload: game.GetState(game_id),
+			Payload: game.GetState(input.Gameid),
 		}
 	}
 

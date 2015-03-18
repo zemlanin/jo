@@ -8,9 +8,9 @@ type lazyJson map[string]interface{}
 type gameField map[string]int
 
 type PlayerInput struct {
-	Game_id   string
 	Value     int
 	Timestamp int
+	Gameid    string
 }
 
 var game_field = gameField{
