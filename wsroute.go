@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/mitchellh/mapstructure"
 	"jo/game"
+	"jo/players"
 	"log"
 )
 
@@ -42,19 +43,10 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 		}
 
 	case "GET_PLAYERS":
-		players := []lazyJson{
-			{
-				"gameId": game_id,
-				"name":   "whatever",
-				"online": true,
-			},
-			{
-				"gameId": game_id,
-				"name":   "another",
-				"online": false,
-			},
+		players, err := players.GetPlayers(game_id)
+		if err != nil {
+			panic(err)
 		}
-
 		private = wsMessage{
 			Type:    "PLAYERS",
 			Payload: players,

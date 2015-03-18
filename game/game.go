@@ -15,7 +15,7 @@ type PlayerInput struct {
 
 var game_field = gameField{
 	"x": 0,
-	"y": 2,
+	"y": 0,
 }
 
 func GetState(game_id string) lazyJson {
