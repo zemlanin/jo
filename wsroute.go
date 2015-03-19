@@ -47,7 +47,10 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 		}
 		public = wsMessage{
 			Type:    "PLAYERS",
-			Payload: players,
+			Payload: messages.GetPlayersOut{
+				Gameid: c_message.Gameid,
+				Players: players,
+			},
 		}
 
 	case "GET_PLAYERS":
@@ -60,9 +63,13 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 		if err != nil {
 			panic(err)
 		}
+
 		private = wsMessage{
 			Type:    "PLAYERS",
-			Payload: players,
+			Payload: messages.GetPlayersOut{
+				Gameid: p_message.Gameid,
+				Players: players,
+			},
 		}
 
 	case "GET_GAME_STATE":
