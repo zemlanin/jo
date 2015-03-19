@@ -10,11 +10,12 @@ import (
 
 type lazyJson map[string]interface{}
 type wsMessage struct {
+	gameId  string
 	Type    string      `json:"type"`
 	Payload interface{} `json:"payload"`
 }
 
-func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
+func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error) {
 	var private wsMessage
 	var public wsMessage
 
@@ -36,7 +37,16 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 			player = players.GeneratePlayer(c_message.Gameid)
 		}
 
+		if c.playerId == "" {
+			c.playerId = c_message.Playerid
+		}
+
+		if c.gameId == "" {
+			c.gameId = c_message.Gameid
+		}
+
 		private = wsMessage{
+			gameId:  c_message.Gameid,
 			Type:    "PLAYER",
 			Payload: player,
 		}
@@ -46,7 +56,8 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 			panic(err)
 		}
 		public = wsMessage{
-			Type: "PLAYERS",
+			gameId: c_message.Gameid,
+			Type:   "PLAYERS",
 			Payload: messages.GetPlayersOut{
 				Gameid:  c_message.Gameid,
 				Players: players,
@@ -65,7 +76,8 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 		}
 
 		private = wsMessage{
-			Type: "PLAYERS",
+			gameId: p_message.Gameid,
+			Type:   "PLAYERS",
 			Payload: messages.GetPlayersOut{
 				Gameid:  p_message.Gameid,
 				Players: players,
@@ -79,6 +91,7 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 			panic(err)
 		}
 		public = wsMessage{
+			gameId:  s_message.Gameid,
 			Type:    "GAME_STATE",
 			Payload: game.GetState(s_message.Gameid),
 		}
@@ -90,6 +103,7 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 		}
 		game.InterpretInput(i_message)
 		public = wsMessage{
+			gameId:  i_message.Gameid,
 			Type:    "GAME_STATE",
 			Payload: game.GetState(i_message.Gameid),
 		}

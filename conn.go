@@ -23,8 +23,10 @@ var upgrader = websocket.Upgrader{
 }
 
 type connection struct {
-	ws   *websocket.Conn
-	send chan wsMessage
+	ws       *websocket.Conn
+	send     chan wsMessage
+	gameId   string
+	playerId string
 }
 
 func (c *connection) readPump() {
@@ -43,7 +45,7 @@ func (c *connection) readPump() {
 			break
 		}
 
-		private, public, err := routeMessage(message)
+		private, public, err := routeMessage(message, c)
 
 		if err != nil {
 			log.Println(err)
@@ -82,6 +84,9 @@ func (c *connection) writePump() {
 			if !ok {
 				c.write(websocket.CloseMessage, []byte{})
 				return
+			}
+			if message.gameId != c.gameId {
+				continue
 			}
 			if err := c.writeJSON(websocket.TextMessage, message); err != nil {
 				return

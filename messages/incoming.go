@@ -1,6 +1,6 @@
 package messages
 
-type GameIdMessage struct {
+type gameIdMessage struct {
 	Gameid string
 }
 
@@ -9,9 +9,9 @@ type ConnectionMessage struct {
 	Playerid string
 }
 
-type GetPlayers GameIdMessage
+type GetPlayers gameIdMessage
 
-type GetGameState GameIdMessage
+type GetGameState gameIdMessage
 
 type PlayerInput struct {
 	Value     int
