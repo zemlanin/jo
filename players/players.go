@@ -16,7 +16,6 @@ type Player struct {
 	Online bool   `json:"online"`
 	Id     string `json:"id"`
 	Gameid string `json:"gameId"`
-	Name   string `json:"name"`
 }
 
 var playersList = []Player{}
@@ -55,7 +54,6 @@ func GeneratePlayer(game_id string) Player {
 	player := Player{
 		Id:     player_id,
 		Gameid: game_id,
-		Name:   player_id,
 		Online: true,
 	}
 
