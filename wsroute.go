@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/mitchellh/mapstructure"
 	"jo/game"
+	"jo/messages"
 	"jo/players"
 	"log"
 )
@@ -16,23 +17,12 @@ type wsMessage struct {
 func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 	var private wsMessage
 	var public wsMessage
-	var ok bool
-	var incoming map[string]interface{}
-	var game_id string
-
-	if incoming, ok = message.Payload.(map[string]interface{}); !ok {
-		return private, public, nil
-	}
-
-	if game_id, ok = incoming["gameId"].(string); !ok {
-		return private, public, nil
-	}
 
 	log.Println(message)
 	switch message.Type {
 	case "CONNECT_PLAYER":
 		var player players.Player
-		var c_message players.ConnectionMessage
+		var c_message messages.ConnectionMessage
 
 		if err := mapstructure.Decode(message.Payload, &c_message); err != nil {
 			panic(err)
@@ -61,7 +51,12 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 		}
 
 	case "GET_PLAYERS":
-		players, err := players.GetPlayers(game_id)
+		var p_message messages.GetPlayers
+
+		if err := mapstructure.Decode(message.Payload, &p_message); err != nil {
+			panic(err)
+		}
+		players, err := players.GetPlayers(p_message.Gameid)
 		if err != nil {
 			panic(err)
 		}
@@ -71,20 +66,25 @@ func routeMessage(message wsMessage) (wsMessage, wsMessage, error) {
 		}
 
 	case "GET_GAME_STATE":
+		var s_message messages.GetGameState
+
+		if err := mapstructure.Decode(message.Payload, &s_message); err != nil {
+			panic(err)
+		}
 		public = wsMessage{
 			Type:    "GAME_STATE",
-			Payload: game.GetState(game_id),
+			Payload: game.GetState(s_message.Gameid),
 		}
 
 	case "NEW_PLAYERS_INPUT":
-		var input game.PlayerInput
-		if err := mapstructure.Decode(message.Payload, &input); err != nil {
+		var i_message messages.PlayerInput
+		if err := mapstructure.Decode(message.Payload, &i_message); err != nil {
 			panic(err)
 		}
-		game.InterpretInput(input)
+		game.InterpretInput(i_message)
 		public = wsMessage{
 			Type:    "GAME_STATE",
-			Payload: game.GetState(input.Gameid),
+			Payload: game.GetState(i_message.Gameid),
 		}
 	}
 

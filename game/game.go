@@ -1,17 +1,12 @@
 package game
 
 import (
-// "log"
+	// "log"
+	"jo/messages"
 )
 
 type lazyJson map[string]interface{}
 type gameField map[string]int
-
-type PlayerInput struct {
-	Value     int
-	Timestamp int
-	Gameid    string
-}
 
 var game_field = gameField{
 	"x": 0,
@@ -27,7 +22,7 @@ func GetState(game_id string) lazyJson {
 	return game_state
 }
 
-func InterpretInput(input PlayerInput) {
+func InterpretInput(input messages.PlayerInput) {
 	switch input.Value {
 	case 0:
 		game_field["y"] = game_field["y"] + 1

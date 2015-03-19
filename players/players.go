@@ -7,11 +7,6 @@ import (
 	"fmt"
 )
 
-type ConnectionMessage struct {
-	Gameid   string
-	Playerid string
-}
-
 type Player struct {
 	Online bool   `json:"online"`
 	Id     string `json:"id"`
