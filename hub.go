@@ -1,5 +1,10 @@
 package main
 
+import (
+	// "log"
+	"jo/players"
+)
+
 type hub struct {
 	connections map[*connection]bool
 	broadcast   chan wsMessage
@@ -23,6 +28,7 @@ func (h *hub) run() {
 			if _, ok := h.connections[c]; ok {
 				delete(h.connections, c)
 				close(c.send)
+				players.DisconnectPlayer(c.playerId)
 			}
 		case m := <-h.broadcast:
 			for c := range h.connections {

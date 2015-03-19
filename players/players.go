@@ -57,6 +57,22 @@ func GeneratePlayer(game_id string) Player {
 	return player
 }
 
+func DisconnectPlayer(playerId string) {
+	for _, p := range playersList {
+		if p.Id == playerId {
+			p.Online = false
+		}
+	}
+}
+
+func ConnectPlayer(playerId string) {
+	for _, p := range playersList {
+		if p.Id == playerId {
+			p.Online = true
+		}
+	}
+}
+
 func SavePlayer(player Player) error {
 	return nil
 }

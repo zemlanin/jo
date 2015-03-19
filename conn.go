@@ -85,9 +85,9 @@ func (c *connection) writePump() {
 				c.write(websocket.CloseMessage, []byte{})
 				return
 			}
-			if message.gameId != c.gameId {
-				continue
-			}
+			// if message.gameId != c.gameId {
+			// 	continue
+			// }
 			if err := c.writeJSON(websocket.TextMessage, message); err != nil {
 				return
 			}

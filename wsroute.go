@@ -33,6 +33,7 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 			player = players.GeneratePlayer(c_message.Gameid)
 		} else if p, err := players.GetPlayer(c_message.Gameid, c_message.Playerid); err == nil {
 			player = p
+			players.ConnectPlayer(player.Id)
 		} else {
 			player = players.GeneratePlayer(c_message.Gameid)
 		}
@@ -63,6 +64,7 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 				Players: players,
 			},
 		}
+		// send state on connect
 
 	case "GET_PLAYERS":
 		var p_message messages.GetPlayers
