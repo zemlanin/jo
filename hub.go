@@ -29,6 +29,7 @@ func (h *hub) run() {
 				delete(h.connections, c)
 				close(c.send)
 				players.DisconnectPlayer(c.playerId)
+				go broadcastPlayers(c.gameId)
 			}
 		case m := <-h.broadcast:
 			for c := range h.connections {

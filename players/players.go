@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	// "log"
 )
 
 type Player struct {
@@ -58,19 +59,29 @@ func GeneratePlayer(game_id string) Player {
 }
 
 func DisconnectPlayer(playerId string) {
+	var newPlayersList []Player
+
 	for _, p := range playersList {
 		if p.Id == playerId {
 			p.Online = false
 		}
+		newPlayersList = append(newPlayersList, p)
 	}
+
+	playersList = newPlayersList
 }
 
 func ConnectPlayer(playerId string) {
+	var newPlayersList []Player
+
 	for _, p := range playersList {
 		if p.Id == playerId {
 			p.Online = true
 		}
+		newPlayersList = append(newPlayersList, p)
 	}
+
+	playersList = newPlayersList
 }
 
 func SavePlayer(player Player) error {

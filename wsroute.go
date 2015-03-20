@@ -15,6 +15,29 @@ type wsMessage struct {
 	Payload interface{} `json:"payload"`
 }
 
+func broadcastPlayers(gameId string) {
+	players, err := players.GetPlayers(gameId)
+	if err != nil {
+		panic(err)
+	}
+	h.broadcast <- wsMessage{
+		gameId: gameId,
+		Type:   "PLAYERS",
+		Payload: messages.GetPlayersOut{
+			Gameid:  gameId,
+			Players: players,
+		},
+	}
+}
+
+func broadcastGameState(gameId string) {
+	h.broadcast <- wsMessage{
+		gameId:  gameId,
+		Type:    "GAME_STATE",
+		Payload: game.GetState(gameId),
+	}
+}
+
 func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error) {
 	var private wsMessage
 	var public wsMessage
@@ -52,19 +75,7 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 			Payload: player,
 		}
 
-		players, err := players.GetPlayers(c_message.Gameid)
-		if err != nil {
-			panic(err)
-		}
-		public = wsMessage{
-			gameId: c_message.Gameid,
-			Type:   "PLAYERS",
-			Payload: messages.GetPlayersOut{
-				Gameid:  c_message.Gameid,
-				Players: players,
-			},
-		}
-		// send state on connect
+		go broadcastPlayers(c_message.Gameid)
 
 	case "GET_PLAYERS":
 		var p_message messages.GetPlayers
@@ -92,11 +103,7 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 		if err := mapstructure.Decode(message.Payload, &s_message); err != nil {
 			panic(err)
 		}
-		public = wsMessage{
-			gameId:  s_message.Gameid,
-			Type:    "GAME_STATE",
-			Payload: game.GetState(s_message.Gameid),
-		}
+		go broadcastGameState(s_message.Gameid)
 
 	case "NEW_PLAYERS_INPUT":
 		var i_message messages.PlayerInput
@@ -104,11 +111,7 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 			panic(err)
 		}
 		game.InterpretInput(i_message)
-		public = wsMessage{
-			gameId:  i_message.Gameid,
-			Type:    "GAME_STATE",
-			Payload: game.GetState(i_message.Gameid),
-		}
+		go broadcastGameState(i_message.Gameid)
 	}
 
 	return private, public, nil
