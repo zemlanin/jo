@@ -18,3 +18,9 @@ type PlayerInput struct {
 	Timestamp int
 	Gameid    string
 }
+
+type ControllersMessage struct {
+    Gameid   string
+    Playerid string
+    Controllers bool
+}

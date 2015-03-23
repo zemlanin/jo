@@ -4,7 +4,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 	"jo/game"
 	"jo/messages"
-	"jo/players"
+	joplayers "jo/players"
 	"log"
 )
 
@@ -16,7 +16,7 @@ type wsMessage struct {
 }
 
 func broadcastPlayers(gameId string) {
-	players, err := players.GetPlayers(gameId)
+	players, err := joplayers.GetPlayers(gameId)
 	if err != nil {
 		panic(err)
 	}
@@ -45,7 +45,7 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 	log.Println(message)
 	switch message.Type {
 	case "CONNECT_PLAYER":
-		var player players.Player
+		var player joplayers.Player
 		var c_message messages.ConnectionMessage
 
 		if err := mapstructure.Decode(message.Payload, &c_message); err != nil {
@@ -53,12 +53,12 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 		}
 
 		if c_message.Playerid == "" {
-			player = players.GeneratePlayer(c_message.Gameid)
-		} else if p, err := players.GetPlayer(c_message.Gameid, c_message.Playerid); err == nil {
+			player = joplayers.GeneratePlayer(c_message.Gameid)
+		} else if p, err := joplayers.GetPlayer(c_message.Gameid, c_message.Playerid); err == nil {
 			player = p
-			players.ConnectPlayer(player.Id)
+			joplayers.ConnectPlayer(player.Id)
 		} else {
-			player = players.GeneratePlayer(c_message.Gameid)
+			player = joplayers.GeneratePlayer(c_message.Gameid)
 		}
 
 		if c.playerId == "" {
@@ -83,7 +83,7 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 		if err := mapstructure.Decode(message.Payload, &p_message); err != nil {
 			panic(err)
 		}
-		players, err := players.GetPlayers(p_message.Gameid)
+		players, err := joplayers.GetPlayers(p_message.Gameid)
 		if err != nil {
 			panic(err)
 		}
@@ -112,6 +112,15 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 		}
 		game.InterpretInput(i_message)
 		go broadcastGameState(i_message.Gameid)
+
+	case "CHANGE_PLAYER_CONTROLLERS":
+		var c_message messages.ControllersMessage
+		if err := mapstructure.Decode(message.Payload, &c_message); err != nil {
+			panic(err)
+		}
+		joplayers.ChangePlayerControllers(c_message.Playerid, c_message.Controllers)
+		go broadcastPlayers(c_message.Gameid)
+		// TODO: send new player_state to target player
 	}
 
 	return private, public, nil

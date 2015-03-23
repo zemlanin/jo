@@ -12,6 +12,7 @@ type Player struct {
 	Online bool   `json:"online"`
 	Id     string `json:"id"`
 	Gameid string `json:"gameId"`
+	Controllers bool `json:"controllers"`
 }
 
 var playersList = []Player{}
@@ -51,6 +52,7 @@ func GeneratePlayer(game_id string) Player {
 		Id:     player_id,
 		Gameid: game_id,
 		Online: true,
+		Controllers: true,
 	}
 
 	playersList = append(playersList, player)
@@ -77,6 +79,20 @@ func ConnectPlayer(playerId string) {
 	for _, p := range playersList {
 		if p.Id == playerId {
 			p.Online = true
+		}
+		newPlayersList = append(newPlayersList, p)
+	}
+
+	playersList = newPlayersList
+}
+
+
+func ChangePlayerControllers(playerId string, newControllers bool) {
+	var newPlayersList []Player
+
+	for _, p := range playersList {
+		if p.Id == playerId {
+			p.Controllers = newControllers
 		}
 		newPlayersList = append(newPlayersList, p)
 	}
