@@ -120,7 +120,6 @@ func routeMessage(message wsMessage, c *connection) (wsMessage, wsMessage, error
 		}
 		joplayers.ChangePlayerControllers(c_message.Playerid, c_message.Controllers)
 		go broadcastPlayers(c_message.Gameid)
-		// TODO: send new player_state to target player
 	}
 
 	return private, public, nil
